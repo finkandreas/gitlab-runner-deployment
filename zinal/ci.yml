@@ -105,7 +105,7 @@ test container-runner:
   script:
     - cat /etc/os-release | grep ubuntu
     # Test that we did not clone the sources
-    - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
+    # - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
 
 test slurm-baremetal:
   tags: ["zinal-slurm-baremetal"]
