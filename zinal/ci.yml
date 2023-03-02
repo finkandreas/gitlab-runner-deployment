@@ -19,4 +19,5 @@ deploy_tds:
     - eval $(grep "nomad job run " nomad_plan.log)
   variables:
     DOCKERTAG: docker.io/finkandreas/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA
+    GIT_SUBMODULE_STRATEGY: recursive
 

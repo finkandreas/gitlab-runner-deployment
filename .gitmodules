@@ -1,0 +1,4 @@
+[submodule "zinal/gitlab-runner-multimode"]
+	path = zinal/gitlab-runner-multimode
+	url = https://gitlab.com/cscs-ci/ci-testing/runners/multimode-runner
+	branch = zinal
