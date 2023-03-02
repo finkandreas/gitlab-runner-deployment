@@ -22,7 +22,7 @@ job "podman-ci-ext-gitlab-runner-job" {
             min_healthy_time = "10s"
             healthy_deadline = "5m"
             auto_revert = true
-            auto_promote = true
+            auto_promote = false
         }
 
         task "podman-ci-ext-gitlab-runner-task" {
