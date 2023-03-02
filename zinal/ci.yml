@@ -9,6 +9,7 @@ stages:
 
 deploy_tds:
   tags: ["zinal-slurm-baremetal"]
+  stage: deploy_tds
   script:
     - cd zinal
     - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
@@ -22,9 +23,52 @@ deploy_tds:
     - '[[ -z $RUNNER_ID ]] && echo "Runner id is empty - this is an error" && exit 1'
       # nomad job plan returns a non-zero status when there is a change, therefore we must ignore the return value
     - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
+    - chmod 600 nomad_plan.log
     - eval $(grep "nomad job run " nomad_plan.log)
   variables:
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA
+    HOME: /users/anfink
+    GIT_SUBMODULE_STRATEGY: recursive
+
+
+test tds container-runner:
+  tags: ["zinal-container-runner"]
+  stage: test_tds
+  image: docker.io/ubuntu:22.04
+  script:
+    - cat /etc/os-release | grep ubuntu
+    # Test that we did not clone the sources
+    - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
+  variables:
+    CSCS_RUN_TDS: 'YES'
+
+
+test tds slurm-baremetal:
+  tags: ["zinal-slurm-baremetal"]
+  stage: test_tds
+  script:
+    - cat /etc/os-release | grep sles
+  variables:
+    CSCS_RUN_TDS: 'YES'
+
+
+# Deploy now production system
+deploy prod:
+  tags: ["zinal-slurm-baremetal"]
+  stage: deploy
+  script:
+    - cd zinal
+    - podman build -f Dockerfile --format docker -t $DOCKERTAG --build-arg GROUP_ID=$(id -g) --build-arg USER_ID=$(id -u) .
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - podman push $DOCKERTAG
+    - podman rmi $DOCKERTAG
+    - TOKEN="$(cat $HOME/zinal/gitlab-runner-config-zinal.token)"
+    - RUNNER_ID="$(cat $HOME/zinal/gitlab-runner-system_id)"
+    - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
+    - chmod 600 nomad_plan.log
+    - eval $(grep "nomad job run " nomad_plan.log)
+  variables:
+    DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:$CI_COMMIT_SHORT_SHA
     HOME: /users/anfink
     GIT_SUBMODULE_STRATEGY: recursive
 
