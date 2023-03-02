@@ -17,7 +17,7 @@ RUN curl -L "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gi
 # copy the runners into the container
 COPY sarus-fake /usr/local/bin/sarus
 COPY gitlab-runner-multimode /home/someuser/gitlab-runner
-COPY container-runner-defaults.sh /home/someuser/gitlab-runner/modes/conatiner-runner/etc/defaults.sh
+COPY container-runner-defaults.sh /home/someuser/gitlab-runner/modes/container-runner/etc/defaults.sh
 COPY slurm-baremetal-defaults.sh /home/someuser/gitlab-runner/modes/slurm-baremetal/etc/defaults.sh
 
 RUN cd /home/someuser/gitlab-runner/modes \
