@@ -14,7 +14,7 @@ deploy_tds:
   script:
     - cd zinal
     - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
-    - echo "REVERT_TAG=$CURRENT_IMG" >> revert.env
+    - echo "REVERT_TAG=$CURRENT_IMG" >> ../build.env
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - podman build -f Dockerfile_tds --format docker --build-arg BASEIMG=$CURRENT_IMG -t $DOCKERTAG .
     - podman push $DOCKERTAG
@@ -33,7 +33,7 @@ deploy_tds:
     GIT_SUBMODULE_STRATEGY: recursive
   artifacts:
     reports:
-      dotenv: zinal/revert.env
+      dotenv: build.env
   # we allow this job to fail, sometimes we do not exit early enough before nomad switches over
   # to the new gitlab-runner, then this job would fail
   # However we have a test in the test tds stage that checks that the correct image is loaded
