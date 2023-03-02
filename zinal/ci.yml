@@ -43,7 +43,7 @@ promote deploy tds:
     - RETRY_COUNT=0
     - DEPLOYMENT=$(nomad deployment list | grep podman-ci-ext-gitlab-runner-job | head -n 1 | cut -f1 -d' ')
     - 'while [[ $RETRY_COUNT -le 15 ]] ; do'
-    - if [[ $(nomad deployment status --json $DEPLOYMENT | jq '.TaskGroups."podman-ci-ext-gitlab-runner-group".HealthyAllocs') -ge 1 ]] ; then nomad deployment promote $DEPLOYMENT ; exit 0 ; fi
+    - if [[ $(nomad deployment status --json $DEPLOYMENT | jq '.TaskGroups."podman-ci-ext-gitlab-runner-group".HealthyAllocs') -ge 1 ]] ; then nomad deployment promote $DEPLOYMENT ; exit $? ; fi
     - let ++RETRY_COUNT
     - sleep 10
     - done
@@ -128,7 +128,10 @@ revert to previous:
     - 'if [[ -z $DOCKERTAG ]] ; then env && echo "DOCKERTAG is empty, cannot revert" && exit 1 ; fi'
     - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
     - chmod 600 nomad_plan.log
-    - eval $(grep "nomad job run " nomad_plan.log)
+    - eval $(grep "nomad job run " nomad_plan.log | sed -e 's/job run/job run -detach/')
+    - sleep 10
+    - DEPLOYMENT=$(nomad deployment list | grep podman-ci-ext-gitlab-runner-job | head -n 1 | cut -f1 -d' ')
+    - nomad deployment promote $DEPLOYMENT
   variables:
     DOCKERTAG: $REVERT_TAG
     HOME: /users/anfink
