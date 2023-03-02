@@ -26,7 +26,7 @@ deploy_tds:
       # nomad job plan returns a non-zero status when there is a change, therefore we must ignore the return value
     - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
     - chmod 600 nomad_plan.log
-    - eval $(grep "nomad job run " nomad_plan.log | set -e "s/job run/job run -detach/")
+    - eval $(grep "nomad job run " nomad_plan.log | sed -e "s/job run/job run -detach/")
   variables:
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA
     HOME: /users/anfink
