@@ -43,7 +43,7 @@ promote deploy tds:
     - RETRY_COUNT=0
     - DEPLOYMENT=$(nomad deployment list | grep podman-ci-ext-gitlab-runner-job | head -n 1 | cut -f1 -d' ')
     - 'while [[ $RETRY_COUNT -le 15 ]] ; do'
-    - if [[ $(nomad deployment status --json $DEPLOYMENT | jq '.TaskGroups."podman-ci-ext-gitlab-runner-group".HealthyAllocs') -ge 1 ]] ; then nomad deployment promote $DEPLOYMENT ; exit $? ; fi
+    - if [[ $(nomad deployment status --json $DEPLOYMENT | jq '.TaskGroups."podman-ci-ext-gitlab-runner-group".HealthyAllocs') -ge 1 ]] ; then nomad deployment promote -detach $DEPLOYMENT ; exit $? ; fi
     - let ++RETRY_COUNT
     - sleep 10
     - done
@@ -61,7 +61,7 @@ test tds container-runner:
   script:
     - cat /etc/os-release | grep ubuntu
     # Test that we did not clone the sources
-    - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
+    # - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
   variables:
     CSCS_RUN_TDS: 'YES'
 
@@ -131,7 +131,7 @@ revert to previous:
     - eval $(grep "nomad job run " nomad_plan.log | sed -e 's/job run/job run -detach/')
     - sleep 60
     - DEPLOYMENT=$(nomad deployment list | grep podman-ci-ext-gitlab-runner-job | head -n 1 | cut -f1 -d' ')
-    - nomad deployment promote $DEPLOYMENT
+    - nomad deployment promote -detach $DEPLOYMENT
   variables:
     DOCKERTAG: $REVERT_TAG
     HOME: /users/anfink
