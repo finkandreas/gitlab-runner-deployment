@@ -1,0 +1,18 @@
+concurrent = 100
+check_interval = 0
+
+[session_server]
+  session_timeout = 1800
+
+
+# all paths are inside the deployed container
+[[runners]]
+  name = "gitlab-runner on Zinal"
+  url = "https://gitlab.com"
+  token = "{{ env "GITLAB_RUNNER_TOKEN" }}"
+  executor = "custom"
+  [runners.custom]
+    config_exec   = "/home/someuser/gitlab-runner/bin/config.sh"
+    prepare_exec  = "/home/someuser/gitlab-runner/bin/prepare.sh"
+    run_exec      = "/home/someuser/gitlab-runner/bin/run.sh"
+    cleanup_exec  = "/home/someuser/gitlab-runner/bin/cleanup.sh"
