@@ -108,6 +108,7 @@ revert to previous:
   stage: revert
   when: on_failure
   script:
+    - cd zinal
     - TOKEN="$(cat $HOME/zinal/gitlab-runner-config-zinal.token)"
     - RUNNER_ID="$(cat $HOME/zinal/gitlab-runner-system_id)"
     - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
