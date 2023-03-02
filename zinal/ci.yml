@@ -18,8 +18,8 @@ deploy_tds:
     - podman rmi $DOCKERTAG
     - TOKEN="$(cat $HOME/zinal/gitlab-runner-config-zinal.token)"
     - RUNNER_ID="$(cat $HOME/zinal/gitlab-runner-system_id)"
-    - [[ -z $TOKEN ]] && echo "Token is empty - this is an error" && exit 1
-    - [[ -z $RUNNEr_ID ]] && echo "Runner id is empty - this is an error" && exit 1
+    - '[[ -z $TOKEN ]] && echo "Token is empty - this is an error" && exit 1'
+    - '[[ -z $RUNNER_ID ]] && echo "Runner id is empty - this is an error" && exit 1'
       # nomad job plan returns a non-zero status when there is a change, therefore we must ignore the return value
     - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
     - eval $(grep "nomad job run " nomad_plan.log)
