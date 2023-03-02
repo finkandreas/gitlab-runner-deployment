@@ -98,6 +98,7 @@ test slurm-baremetal:
   stage: test
   script:
     - cat /etc/os-release | grep sles
+    - '[[ -d zinal ]] && echo "Directory zinal found, this is expected because we cloned the sources"'
     - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
     - '[[ $CURRENT_IMG != "$CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA" ]] && echo "CURRENT_IMG=$CURRENT_IMG is the wrong image running the gitlab runner" && exit 1'
 
@@ -114,3 +115,4 @@ revert to previous:
     - eval $(grep "nomad job run " nomad_plan.log)
   variables:
     DOCKERTAG: $REVERT_TAG
+    HOME: /users/anfink
