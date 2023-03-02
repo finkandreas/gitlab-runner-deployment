@@ -36,7 +36,7 @@ deploy_tds:
       dotenv: build.env
 
 promote deploy tds:
-  tags: ["zinal-slurm-baremeta"]
+  tags: ["zinal-slurm-baremetal"]
   stage: deploy_tds
   needs: [deploy_tds]
   script:
@@ -125,7 +125,7 @@ revert to previous:
     - cd zinal
     - TOKEN="$(cat $HOME/zinal/gitlab-runner-config-zinal.token)"
     - RUNNER_ID="$(cat $HOME/zinal/gitlab-runner-system_id)"
-    - 'if [[ -z $DOCKERTAG ]] then env && echo "DOCKERTAG is empty, cannot revert" && exit 1 ; fi'
+    - 'if [[ -z $DOCKERTAG ]] ; then env && echo "DOCKERTAG is empty, cannot revert" && exit 1 ; fi'
     - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
     - chmod 600 nomad_plan.log
     - eval $(grep "nomad job run " nomad_plan.log)
