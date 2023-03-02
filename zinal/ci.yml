@@ -29,10 +29,10 @@ deploy_tds:
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA
     HOME: /users/anfink
     GIT_SUBMODULE_STRATEGY: recursive
-# we allow this job to fail, sometimes we do not exit early enough before nomad switches over
-# to the new gitlab-runner, then this job would fail
-# However we have a test in the test tds stage that checks that the correct image is loaded
-allow_failure: true
+  # we allow this job to fail, sometimes we do not exit early enough before nomad switches over
+  # to the new gitlab-runner, then this job would fail
+  # However we have a test in the test tds stage that checks that the correct image is loaded
+  allow_failure: true
 
 
 test tds container-runner:
