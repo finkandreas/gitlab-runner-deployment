@@ -19,7 +19,7 @@ job "podman-ci-ext-gitlab-runner-job" {
         update {
             max_parallel = 1
             canary = 1
-            min_healthy_time = "30s"
+            min_healthy_time = "10s"
             healthy_deadline = "5m"
             auto_revert = true
             auto_promote = true
