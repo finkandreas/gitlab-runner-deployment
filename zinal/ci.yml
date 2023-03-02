@@ -6,6 +6,7 @@ stages:
   - test_tds
   - deploy
   - test
+  - revert
 
 deploy_tds:
   tags: ["zinal-slurm-baremetal"]
@@ -13,6 +14,7 @@ deploy_tds:
   script:
     - cd zinal
     - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
+    - echo "REVERT_TAG=$CURRENT_IMG" >> revert.env
     - podman build -f Dockerfile_tds --format docker --build-arg BASEIMG=$CURRENT_IMG -t $DOCKERTAG .
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - podman push $DOCKERTAG
@@ -29,6 +31,9 @@ deploy_tds:
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA
     HOME: /users/anfink
     GIT_SUBMODULE_STRATEGY: recursive
+  artifacts:
+    reports:
+      dotenv: revert.env
   # we allow this job to fail, sometimes we do not exit early enough before nomad switches over
   # to the new gitlab-runner, then this job would fail
   # However we have a test in the test tds stage that checks that the correct image is loaded
@@ -77,4 +82,35 @@ deploy prod:
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:$CI_COMMIT_SHORT_SHA
     HOME: /users/anfink
     GIT_SUBMODULE_STRATEGY: recursive
+  allow_failure: true # see above statement why this is allowed to fail
 
+test container-runner:
+  tags: ["zinal-container-runner"]
+  stage: test
+  image: docker.io/ubuntu:22.04
+  script:
+    - cat /etc/os-release | grep ubuntu
+    # Test that we did not clone the sources
+    - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
+
+test slurm-baremetal:
+  tags: ["zinal-slurm-baremetal"]
+  stage: test
+  script:
+    - cat /etc/os-release | grep sles
+    - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
+    - '[[ $CURRENT_IMG != "$CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA" ]] && echo "CURRENT_IMG=$CURRENT_IMG is the wrong image running the gitlab runner" && exit 1'
+
+
+revert to previous:
+  tags: ["zinal-slurm-baremetal"]
+  stage: revert
+  when: on_failure
+  script:
+    - TOKEN="$(cat $HOME/zinal/gitlab-runner-config-zinal.token)"
+    - RUNNER_ID="$(cat $HOME/zinal/gitlab-runner-system_id)"
+    - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
+    - chmod 600 nomad_plan.log
+    - eval $(grep "nomad job run " nomad_plan.log)
+  variables:
+    DOCKERTAG: $REVERT_TAG

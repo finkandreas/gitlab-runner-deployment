@@ -2,3 +2,5 @@ ARG BASEIMG
 FROM $BASEIMG
 
 COPY gitlab-runner-multimode /home/someuser/gitlab-runner/tds
+COPY container-runner-defaults.sh /home/someuser/gitlab-runner/tds/modes/conatiner-runner/etc/defaults.sh
+COPY slurm-baremetal-defaults.sh /home/someuser/gitlab-runner/tds/modes/slurm-baremetal/etc/defaults.sh

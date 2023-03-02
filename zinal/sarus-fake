@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "This is sarus inside the container and should NOT be used"
+echo "You must set the variable 'PULL_ON_HOST_MACHINE: NO'"
+exit 1
