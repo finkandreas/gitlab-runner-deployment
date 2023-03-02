@@ -12,7 +12,7 @@ deploy_tds:
   script:
     - cd zinal
     - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
-    - podman build -f Dockerfile_tds --format docker -t $DOCKERTAG .
+    - podman build -f Dockerfile_tds --format docker --build-arg BASEIMG=$CURRENT_IMG -t $DOCKERTAG .
     - podman push $DOCKERTAG
     - podman rmi $DOCKERTAG
     - nomad job plan -var image_id=$DOCKERTAG -var GITLAB_RUNNER_TOKEN=$(cat $HOME/zinal/gitlab-runner-config-zinal.token) -var GITLAB_RUNNER_SYSTEM_ID=$(cat $HOME/zinal/gitlab-runner-system_id) nomad_podman_gitlab-runner.hcl | tee nomad_plan.log
