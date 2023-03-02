@@ -129,7 +129,7 @@ revert to previous:
     - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
     - chmod 600 nomad_plan.log
     - eval $(grep "nomad job run " nomad_plan.log | sed -e 's/job run/job run -detach/')
-    - sleep 10
+    - sleep 60
     - DEPLOYMENT=$(nomad deployment list | grep podman-ci-ext-gitlab-runner-job | head -n 1 | cut -f1 -d' ')
     - nomad deployment promote $DEPLOYMENT
   variables:
