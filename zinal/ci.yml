@@ -111,6 +111,7 @@ revert to previous:
     - cd zinal
     - TOKEN="$(cat $HOME/zinal/gitlab-runner-config-zinal.token)"
     - RUNNER_ID="$(cat $HOME/zinal/gitlab-runner-system_id)"
+    - '[[ -z $DOCKERTAG ]] && env && echo "DOCKERTAG is empty, cannot revert" && exit 1'
     - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
     - chmod 600 nomad_plan.log
     - eval $(grep "nomad job run " nomad_plan.log)
