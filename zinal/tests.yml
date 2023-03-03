@@ -16,7 +16,7 @@
     - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
 
 
-test-slurm-baremetal:
+.test-slurm-baremetal:
   tags: ["zinal-slurm-baremetal"]
   script:
     - cat /etc/os-release | grep sles

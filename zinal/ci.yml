@@ -33,10 +33,10 @@ promote deploy_tds:
 
 ######################## Now we test the deployed TDS runner, jobs are submitted to the tds executables when CSCS_RUN_TDS=YES ################################
 test tds container-runner:
-  extends: ["test-container-runner", "test-tds"]
+  extends: [".test-container-runner", ".test-tds"]
 
 test tds slurm-baremetal:
-  extends: ["test-slurm-baremetal", "test-tds"]
+  extends: [".test-slurm-baremetal", ".test-tds"]
   variables:
     EXPECTED_CURRENT_IMG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA
 
@@ -58,10 +58,10 @@ promote deploy_prod:
 
 ######## Run all tests again and only when they all pass this runner will be kept. In case of a failed test the runner will be reverted #########################
 test container-runner:
-  extends: ["test-container-runner", "test-pprod"]
+  extends: [".test-container-runner", ".test-pprod"]
 
 test slurm-baremetal:
-  extends: ["test-slurm-baremetal", "test-prod"]
+  extends: [".test-slurm-baremetal", ".test-prod"]
   variables:
     EXPECTED_CURRENT_IMG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:$CI_COMMIT_SHORT_SHA
 
