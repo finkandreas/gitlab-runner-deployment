@@ -53,6 +53,7 @@ job "podman-ci-ext-gitlab-runner-job" {
                 command = "gitlab-runner"
                 args = ["run", "-c", "local/gitlab-runner-config.toml"]
                 network_mode = "host"
+                init = true
                 volumes = [
                     # slurm things
                     "/usr/bin/srun:/usr/bin/srun",
