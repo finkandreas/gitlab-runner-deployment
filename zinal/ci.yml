@@ -54,7 +54,7 @@ deploy_prod:
 promote deploy_prod:
   extends: .deploy-promote
   stage: deploy
-  needs: [deploy_prod]
+  needs: [deploy_tds, deploy_prod]
 
 
 ######## Run all tests again and only when they all pass this runner will be kept. In case of a failed test the runner will be reverted #########################
