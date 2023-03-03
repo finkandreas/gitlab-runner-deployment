@@ -99,7 +99,7 @@ deploy prod:
     GIT_SUBMODULE_STRATEGY: recursive
   allow_failure: true # see above statement why this is allowed to fail
 
-promote deploy tds:
+promote deploy prod:
   tags: ["zinal-slurm-baremetal"]
   stage: deploy
   needs: ["deploy prod"]
