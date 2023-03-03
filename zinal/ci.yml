@@ -1,5 +1,7 @@
 include:
   - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext-devel.yml'
+  - local: 'zinal/deploy.yml'
+  - local: 'zinal/tests.yml'
 
 stages:
   - deploy_tds
@@ -8,138 +10,63 @@ stages:
   - test
   - revert
 
-variables:
-  GITLAB_RUNNER_VERSION: "v15.8.3"
-
+############# First we deploy TDS on top of the currently running image, and restart the gitlab runner ##############################
 deploy_tds:
-  tags: ["zinal-slurm-baremetal"]
+  extends: .deploy
   stage: deploy_tds
-  script:
-    - cd zinal
+  before_script:
     - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
     - echo "REVERT_TAG=$CURRENT_IMG" >> revert.env
-    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - podman build -f Dockerfile_tds --format docker --build-arg BASEIMG=$CURRENT_IMG --build-arg GITLAB_RUNNER_VERSION=$GITLAB_RUNNER_VERSION -t $DOCKERTAG .
-    - podman push $DOCKERTAG
-    - podman rmi $DOCKERTAG
-    - TOKEN="$(cat $HOME/zinal/gitlab-runner-config-zinal.token)"
-    - RUNNER_ID="$(cat $HOME/zinal/gitlab-runner-system_id)"
-    - 'if [[ -z $TOKEN ]] ; then echo "Token is empty - this is an error" && exit 1 ; fi'
-    - 'if [[ -z $RUNNER_ID ]] ; then echo "Runner id is empty - this is an error" && exit 1 ; fi'
-      # nomad job plan returns a non-zero status when there is a change, therefore we must ignore the return value
-    - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
-    - chmod 600 nomad_plan.log
-    - eval $(grep "nomad job run " nomad_plan.log | sed -e "s/job run/job run -detach/")
   variables:
+    DOCKERFILE: Dockerfile_tds
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA
-    HOME: /users/anfink
-    GIT_SUBMODULE_STRATEGY: recursive
+    BUILDARGS: --build-arg BASEIMG=$CURRENT_IMG
   artifacts:
     reports:
       dotenv: zinal/revert.env
 
-promote deploy tds:
-  tags: ["zinal-slurm-baremetal"]
+promote deploy_tds:
+  extends: .deploy-promote
   stage: deploy_tds
   needs: [deploy_tds]
-  script:
-    - if [[ -z $REVERT_TAG ]] ; then echo "REVERT_TAG is empty - this is an error, because it is unknown to which version we should revert to. Deployment will not be promoted" && exit 1 ; fi
-    - RETRY_COUNT=0
-    - DEPLOYMENT=$(nomad deployment list | grep podman-ci-ext-gitlab-runner-job | head -n 1 | cut -f1 -d' ')
-    - 'while [[ $RETRY_COUNT -le 15 ]] ; do'
-    - if [[ $(nomad deployment status --json $DEPLOYMENT | jq '.TaskGroups."podman-ci-ext-gitlab-runner-group".HealthyAllocs') -ge 1 ]] ; then nomad deployment promote -detach $DEPLOYMENT ; exit $? ; fi
-    - let ++RETRY_COUNT
-    - sleep 10
-    - done
-    - exit 1
-  # we allow this job to fail, sometimes we do not exit early enough before nomad switches over
-  # to the new gitlab-runner, then this job would fail
-  # However we have a test in the test tds stage that checks that the correct image is loaded
-  allow_failure: true
 
 
+######################## Now we test the deployed TDS runner, jobs are submitted to the tds executables when CSCS_RUN_TDS=YES ################################
 test tds container-runner:
-  tags: ["zinal-container-runner"]
-  stage: test_tds
-  image: ubuntu:22.04
-  script:
-    - cat /etc/os-release | grep ubuntu
-    - env
-    # Test that we did not clone the sources
-    # - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
-  variables:
-    CSCS_RUN_TDS: 'YES'
-
+  extends: ["test-container-runner", "test-tds"]
 
 test tds slurm-baremetal:
-  tags: ["zinal-slurm-baremetal"]
-  stage: test_tds
-  script:
-    - cat /etc/os-release | grep sles
-    - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
-    - 'if [[ $CURRENT_IMG != "$CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA" ]] ; then echo "CURRENT_IMG=$CURRENT_IMG is the wrong image running the gitlab runner" && exit 1 ; fi'
+  extends: ["test-slurm-baremetal", "test-tds"]
   variables:
-    CSCS_RUN_TDS: 'YES'
+    EXPECTED_CURRENT_IMG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:tds-$CI_COMMIT_SHORT_SHA
 
 
-# Deploy now production system
-deploy prod:
-  tags: ["zinal-slurm-baremetal"]
+############ If all tests above passed, we will build a new container image that will be the new version of t he gitlab runner (no TDS executables will be in there) ####################
+deploy_prod:
+  extends: .deploy
   stage: deploy
-  script:
-    - cd zinal
-    - podman build -f Dockerfile --format docker -t $DOCKERTAG --build-arg GROUP_ID=$(id -g) --build-arg USER_ID=$(id -u) --build-arg GITLAB_RUNNER_VERSION=$GITLAB_RUNNER_VERSION .
-    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - podman push $DOCKERTAG
-    - podman rmi $DOCKERTAG
-    - TOKEN="$(cat $HOME/zinal/gitlab-runner-config-zinal.token)"
-    - RUNNER_ID="$(cat $HOME/zinal/gitlab-runner-system_id)"
-    - nomad job plan -var image_id=$DOCKERTAG -var "GITLAB_RUNNER_TOKEN=$TOKEN" -var "GITLAB_RUNNER_SYSTEM_ID=$RUNNER_ID" nomad_podman_gitlab-runner.hcl | tee nomad_plan.log || true
-    - chmod 600 nomad_plan.log
-    - eval $(grep "nomad job run " nomad_plan.log | sed -e "s/job run/job run -detach/")
   variables:
+    DOCKERFILE: Dockerfile
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:$CI_COMMIT_SHORT_SHA
-    HOME: /users/anfink
-    GIT_SUBMODULE_STRATEGY: recursive
+    BUILDARGS: --build-arg GROUP_ID=$(id -g) --build-arg USER_ID=$(id -u)
 
-promote deploy prod:
-  tags: ["zinal-slurm-baremetal"]
+promote deploy_prod:
+  extends: .deploy-promote
   stage: deploy
-  needs: ["deploy prod"]
-  script:
-    - RETRY_COUNT=0
-    - DEPLOYMENT=$(nomad deployment list | grep podman-ci-ext-gitlab-runner-job | head -n 1 | cut -f1 -d' ')
-    - 'while [[ $RETRY_COUNT -le 15 ]] ; do'
-    - if [[ $(nomad deployment status --json $DEPLOYMENT | jq '.TaskGroups."podman-ci-ext-gitlab-runner-group".HealthyAllocs') -ge 1 ]] ; then nomad deployment promote -detach $DEPLOYMENT ; exit $? ; fi
-    - let ++RETRY_COUNT
-    - sleep 10
-    - done
-    - exit 1
-  # we allow this job to fail, sometimes we do not exit early enough before nomad switches over
-  # to the new gitlab-runner, then this job would fail
-  # However we have a test in the test tds stage that checks that the correct image is loaded
-  allow_failure: true
+  needs: [deploy_prod]
 
 
+######## Run all tests again and only when they all pass this runner will be kept. In case of a failed test the runner will be reverted #########################
 test container-runner:
-  tags: ["zinal-container-runner"]
-  stage: test
-  image: ubuntu:22.04
-  script:
-    - cat /etc/os-release | grep ubuntu
-    # Test that we did not clone the sources
-    # - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
+  extends: ["test-container-runner", "test-pprod"]
 
 test slurm-baremetal:
-  tags: ["zinal-slurm-baremetal"]
-  stage: test
-  script:
-    - cat /etc/os-release | grep sles
-    - '[[ -d zinal ]] && echo "Directory zinal found, this is expected because we cloned the sources"'
-    - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
-    - 'if [[ $CURRENT_IMG != "$CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:$CI_COMMIT_SHORT_SHA" ]] ; then echo "CURRENT_IMG=$CURRENT_IMG is the wrong image running the gitlab runner" && exit 1 ; fi'
+  extends: ["test-slurm-baremetal", "test-prod"]
+  variables:
+    EXPECTED_CURRENT_IMG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:$CI_COMMIT_SHORT_SHA
 
 
+#### Revert to previous runner if anything went wrong along the way ############
 revert to previous:
   tags: ["zinal-slurm-baremetal"]
   stage: revert
