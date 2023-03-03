@@ -20,6 +20,7 @@
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
     GITLAB_RUNNER_VERSION: "v15.8.3"
+    HOME: /users/anfink
 
 
 .deploy-promote:

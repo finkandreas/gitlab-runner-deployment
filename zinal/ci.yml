@@ -85,4 +85,5 @@ revert to previous:
     - 'nomad deployment promote -detach $DEPLOYMENT'
   variables:
     DOCKERTAG: $REVERT_TAG
+    HOME: /users/anfink
   allow_failure: true
