@@ -58,7 +58,7 @@ promote deploy_prod:
 
 ######## Run all tests again and only when they all pass this runner will be kept. In case of a failed test the runner will be reverted #########################
 test container-runner:
-  extends: [".test-container-runner", ".test-pprod"]
+  extends: [".test-container-runner", ".test-prod"]
 
 test slurm-baremetal:
   extends: [".test-slurm-baremetal", ".test-prod"]
