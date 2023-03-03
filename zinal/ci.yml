@@ -15,7 +15,7 @@ deploy_tds:
   extends: .deploy
   stage: deploy_tds
   before_script:
-    - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
+    - export CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
     - echo "REVERT_TAG=$CURRENT_IMG" >> revert.env
   variables:
     DOCKERFILE: Dockerfile_tds
