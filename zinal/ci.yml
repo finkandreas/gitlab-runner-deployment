@@ -15,7 +15,7 @@ deploy_tds:
   extends: .deploy
   stage: deploy_tds
   before_script:
-    - export CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
+    - CURRENT_IMG="$(nomad job inspect podman-ci-ext-gitlab-runner-job | jq --raw-output .Job.TaskGroups[0].Tasks[0].Config.image)"
     - echo "REVERT_TAG=$CURRENT_IMG" >> revert.env
     - BUILDARGS="--build-arg BASEIMG=$CURRENT_IMG"
   variables:
@@ -45,10 +45,11 @@ test tds slurm-baremetal:
 deploy_prod:
   extends: .deploy
   stage: deploy
+  before_script:
+    - BUILDARGS="--build-arg GROUP_ID=$(id -g) --build-arg USER_ID=$(id -u)"
   variables:
     DOCKERFILE: Dockerfile
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:$CI_COMMIT_SHORT_SHA
-    BUILDARGS: --build-arg GROUP_ID=$(id -g) --build-arg USER_ID=$(id -u)
 
 promote deploy_prod:
   extends: .deploy-promote
