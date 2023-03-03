@@ -11,7 +11,7 @@ RUN zypper --non-interactive install \
   && rm -Rf /var/log/zypp /var/log/zypper.log
 
 # install gitlab-runner in /usr/local/bin
-RUN curl -L "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64" > /usr/local/bin/gitlab-runner \
+RUN curl -L "https://gitlab-runner-downloads.s3.amazonaws.com/v15.8.2/binaries/gitlab-runner-linux-amd64" > /usr/local/bin/gitlab-runner \
   && chmod +x /usr/local/bin/gitlab-runner
 
 # copy the runners into the container
