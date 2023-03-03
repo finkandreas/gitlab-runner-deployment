@@ -61,6 +61,8 @@ test tds container-runner:
   image: ubuntu:22.04
   script:
     - cat /etc/os-release | grep ubuntu
+    - env
+    - if [[ "$CI_BUILDS_DIR" != *"/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/CI_CONCURRENT_PROJECT_ID"* ]] ; then echo "CI_BUILDS_DIR=$CI_BUILDS_DIR does not seem to match the expected builds directory. CI_CONCURRENT_PROJECT_ID=$CI_CONCURRENT_PROJECT_ID" ; exit 1 ; done
     # Test that we did not clone the sources
     # - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
   variables:
@@ -97,7 +99,6 @@ deploy prod:
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-zinal-gitlab-runner:$CI_COMMIT_SHORT_SHA
     HOME: /users/anfink
     GIT_SUBMODULE_STRATEGY: recursive
-  allow_failure: true # see above statement why this is allowed to fail
 
 promote deploy prod:
   tags: ["zinal-slurm-baremetal"]
