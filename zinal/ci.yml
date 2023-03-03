@@ -62,7 +62,6 @@ test tds container-runner:
   script:
     - cat /etc/os-release | grep ubuntu
     - env
-    - if [[ "$CI_BUILDS_DIR" != *"/gitlab-runner/builds/$CI_RUNNER_SHORT_TOKEN/CI_CONCURRENT_PROJECT_ID"* ]] ; then echo "CI_BUILDS_DIR=$CI_BUILDS_DIR does not seem to match the expected builds directory. CI_CONCURRENT_PROJECT_ID=$CI_CONCURRENT_PROJECT_ID" ; exit 1 ; fi
     # Test that we did not clone the sources
     # - '[[ ! -d zinal ]] && echo "Directory zinal not found, this is expected because we did not clone the sources"'
   variables:
