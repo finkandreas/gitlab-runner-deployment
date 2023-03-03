@@ -9,7 +9,7 @@ stages:
   - revert
 
 variables:
-  GITLAB_RUNNER_VERSION: "v15.9.0"
+  GITLAB_RUNNER_VERSION: "v15.8.3"
 
 deploy_tds:
   tags: ["zinal-slurm-baremetal"]
