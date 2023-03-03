@@ -80,6 +80,8 @@ job "podman-ci-ext-gitlab-runner-job" {
                 ]
             }
 
+            kill_timeout = "30s"
+
             resources {
                 cores = 1
                 memory = 512
