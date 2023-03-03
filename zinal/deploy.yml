@@ -1,6 +1,7 @@
 .deploy:
   tags: ["zinal-slurm-baremetal"]
   script:
+    - set -x
     - cd zinal
       # clear podman caches and images
     - podman system prune -af
