@@ -18,7 +18,6 @@
     - chmod 600 nomad_plan.log
     - eval $(grep "nomad job run " nomad_plan.log | sed -e "s/job run/job run -detach/")
   variables:
-    HOME: /users/anfink
     GIT_SUBMODULE_STRATEGY: recursive
     GITLAB_RUNNER_VERSION: "v15.8.3"
 
