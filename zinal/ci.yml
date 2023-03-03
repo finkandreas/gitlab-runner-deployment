@@ -86,3 +86,4 @@ revert to previous:
   variables:
     DOCKERTAG: $REVERT_TAG
   allow_failure: true
+  HOME: /users/anfink
