@@ -81,6 +81,7 @@ job "podman-ci-ext-gitlab-runner-job" {
             }
 
             kill_timeout = "30s"
+            kill_signal = "SIGQUIT"
 
             resources {
                 cores = 1
