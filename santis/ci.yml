@@ -13,10 +13,10 @@ build container:
     - podman build -f $DOCKERFILE --format docker --build-arg GITLAB_RUNNER_VERSION=$GITLAB_RUNNER_VERSION --build-arg GITLAB_RUNNER_ARCH=$GITLAB_RUNNER_ARCH --build-arg USER_ID=$USER_ID --build-arg GROUP_ID=$GROUP_ID -t $DOCKERTAG .
     - podman push $DOCKERTAG
   variables:
-    DEPLOYMENT_VERSION: 0.1
+    DEPLOYMENT_VERSION: '0.1'
     DOCKERFILE: Dockerfile.container_build
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-$CI_COMMIT_REF_SLUG-gitlab-runner:$DEPLOYMENT_VERSION
     GITLAB_RUNNER_VERSION: "v16.7.0"
     GITLAB_RUNNER_ARCH: "amd64"
-    USER_ID: 25014
-    GROUP_ID: 31774
+    USER_ID: '25014'
+    GROUP_ID: '31774'
