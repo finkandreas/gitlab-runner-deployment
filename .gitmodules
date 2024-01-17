@@ -1,4 +1,4 @@
-[submodule "zinal/gitlab-runner-multimode"]
-	path = zinal/gitlab-runner-multimode
+[submodule "santis/gitlab-runner-multimode"]
+	path = santis/gitlab-runner-multimode
 	url = https://gitlab.com/cscs-ci/ci-testing/runners/multimode-runner.git
-	branch = zinal
+    branch = santis
