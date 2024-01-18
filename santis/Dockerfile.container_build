@@ -10,6 +10,9 @@ RUN zypper --non-interactive install \
     libjson-c3 \
     wget \
     tar \
+    gzip \
+    bzip2 \
+    xz \
   && zypper --non-interactive clean -a \
   && rm -Rf /var/log/zypp /var/log/zypper.log
 
