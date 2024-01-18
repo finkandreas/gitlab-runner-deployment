@@ -32,7 +32,8 @@ COPY login-baremetal-defaults.sh /home/someuser/gitlab-runner/modes/login-bareme
 RUN cd /home/someuser/gitlab-runner/modes \
   && ln -s container-runner container \
   && ln -s slurm-baremetal spack-stack-builder \
-  && ls -lh /home/someuser/gitlab-runner/bin/config.sh /home/someuser/gitlab-runner/modes/container-runner/bin/config.sh
+  && ls -lh /home/someuser/gitlab-runner/bin/config.sh /home/someuser/gitlab-runner/modes/container-runner/bin/config.sh \
+  && mkdir /user-environment && chmod 755 /user-environment
 
 # add someuser
 ARG USER_ID
