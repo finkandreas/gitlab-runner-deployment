@@ -22,6 +22,7 @@ COPY sarus-fake /usr/local/bin/sarus
 COPY gitlab-runner-multimode /home/someuser/gitlab-runner
 COPY container-runner-defaults.sh /home/someuser/gitlab-runner/modes/container-runner/etc/defaults.sh
 COPY slurm-baremetal-defaults.sh /home/someuser/gitlab-runner/modes/slurm-baremetal/etc/defaults.sh
+COPY login-baremetal-defaults.sh /home/someuser/gitlab-runner/modes/login-baremetal/etc/defaults.sh
 
 RUN cd /home/someuser/gitlab-runner/modes \
   && ln -s container-runner container \
