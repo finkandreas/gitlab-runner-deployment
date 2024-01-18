@@ -1,4 +1,4 @@
-FROM docker.io/opensuse/leap:15.3
+FROM docker.io/opensuse/leap:15.4
 
 # We need git, install it with zypper
 RUN zypper --non-interactive install \
@@ -7,6 +7,7 @@ RUN zypper --non-interactive install \
     python3 \
     hostname \
     jq \
+    libjson-c3 \
   && zypper --non-interactive clean -a \
   && rm -Rf /var/log/zypp /var/log/zypper.log
 

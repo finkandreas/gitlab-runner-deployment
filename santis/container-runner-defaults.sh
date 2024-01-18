@@ -2,5 +2,6 @@
 export SLURM_JOB_NUM_NODES="1"
 export SLURM_TIMELIMIT="15:00"
 export SLURM_NTASKS="1"
+export SLURM_PARTITION="normal"
 
 export PULL_ON_HOST_MACHINE="NO"
