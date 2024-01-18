@@ -8,6 +8,8 @@ RUN zypper --non-interactive install \
     hostname \
     jq \
     libjson-c3 \
+    wget \
+    tar \
   && zypper --non-interactive clean -a \
   && rm -Rf /var/log/zypp /var/log/zypper.log
 
