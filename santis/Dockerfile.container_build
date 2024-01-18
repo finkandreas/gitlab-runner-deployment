@@ -38,7 +38,7 @@ RUN cd /home/someuser/gitlab-runner/modes \
 # add someuser
 ARG USER_ID
 ARG GROUP_ID
-RUN groupadd -g $GROUP_ID defgroup && useradd -m -u $USER_ID -g defgroup someuser
+RUN groupadd -g $GROUP_ID defgroup && useradd -m -u $USER_ID -g defgroup someuser && chown --recursive someuser:defgroup /home/someuser
 
 # ensure that the user slurm exists in the container too
 RUN groupadd -g 9999 slurm && useradd -M -u 9999 -g slurm slurm
