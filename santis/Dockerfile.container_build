@@ -25,7 +25,7 @@ COPY slurm-baremetal-defaults.sh /home/someuser/gitlab-runner/modes/slurm-bareme
 
 RUN cd /home/someuser/gitlab-runner/modes \
   && ln -s container-runner container \
-  && ln -s baremetal-runner spack-stack-builder \
+  && ln -s slurm-baremetal spack-stack-builder \
   && ls -lh /home/someuser/gitlab-runner/bin/config.sh /home/someuser/gitlab-runner/modes/container-runner/bin/config.sh
 
 # add someuser
