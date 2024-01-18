@@ -14,7 +14,7 @@ build container:
     - podman push $DOCKERTAG
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
-    DEPLOYMENT_VERSION: '0.3'
+    DEPLOYMENT_VERSION: '0.4'
     DOCKERFILE: Dockerfile.container_build
     DOCKERTAG: $CI_REGISTRY_IMAGE/cicd-ext-$CI_COMMIT_REF_SLUG-gitlab-runner:$DEPLOYMENT_VERSION
     GITLAB_RUNNER_VERSION: "v16.7.0"
