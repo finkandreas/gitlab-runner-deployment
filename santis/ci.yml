@@ -18,7 +18,7 @@ variables:
     GITLAB_RUNNER_VERSION: "v16.7.0"
     USER_ID: '25014'
     GROUP_ID: '31774'
-    DOCKERFILE: Dockerfile.container_build
+    DOCKERFILE: santis/Dockerfile.container_build
     PERSIST_IMAGE_NAME: $CI_REGISTRY_IMAGE/cicd-ext-$CI_COMMIT_REF_SLUG-gitlab-runner:$DEPLOYMENT_VERSION-${ARCH}
     DOCKER_BUILD_ARGS: '["GITLAB_RUNNER_VERSION=$GITLAB_RUNNER_VERSION", "USER_ID=$USER_ID", "GROUP_ID=$GROUP_ID"]'
 build aarch64:
