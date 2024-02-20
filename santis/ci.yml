@@ -6,7 +6,7 @@ stages:
   - make_multiarch
 
 variables:
-    DEPLOYMENT_VERSION: '0.14'
+    DEPLOYMENT_VERSION: '0.15'
 
 .build-container:
   stage: build_container
